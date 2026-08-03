@@ -1,0 +1,74 @@
+station_id,station_name,zone_id,zone_name,latitude,longitude,platform_count,traffic_category,capacity_trains_per_hour
+CSMT,Chhatrapati Shivaji Maharaj Terminus,CR,Central Railway,18.9398,72.8355,18,HIGH,28
+PUNE,Pune Junction,CR,Central Railway,18.5286,73.8744,6,HIGH,29
+NGP,Nagpur Junction,CR,Central Railway,21.1523,79.0882,8,HIGH,21
+BSL,Bhusaval Junction,CR,Central Railway,21.0447,75.7849,7,MEDIUM,16
+SUR,Solapur Junction,CR,Central Railway,17.6599,75.9064,6,MEDIUM,14
+KYN,Kalyan Junction,CR,Central Railway,19.2437,73.1355,8,HIGH,18
+DD,Daund Junction,CR,Central Railway,18.4642,74.5815,5,LOW,6
+HWH,Howrah Junction,ER,Eastern Railway,22.5851,88.3468,23,HIGH,18
+SDAH,Sealdah,ER,Eastern Railway,22.5675,88.3708,20,HIGH,29
+ASN,Asansol Junction,ER,Eastern Railway,23.6739,86.9524,8,MEDIUM,15
+BWN,Barddhaman Junction,ER,Eastern Railway,23.2324,87.8615,6,MEDIUM,8
+MLDT,Malda Town,ER,Eastern Railway,25.0217,88.1414,5,LOW,4
+PNBE,Patna Junction,ECR,East Central Railway,25.6093,85.1376,10,HIGH,22
+DNR,Danapur,ECR,East Central Railway,25.6328,85.0453,5,LOW,2
+MFP,Muzaffarpur Junction,ECR,East Central Railway,26.1225,85.3906,6,MEDIUM,14
+GAYA,Gaya Junction,ECR,East Central Railway,24.7955,85.0002,7,MEDIUM,13
+DHN,Dhanbad Junction,ECR,East Central Railway,23.7957,86.4304,7,MEDIUM,8
+BBS,Bhubaneswar,ECoR,East Coast Railway,20.27,85.833,6,HIGH,25
+PURI,Puri,ECoR,East Coast Railway,19.8106,85.8314,5,MEDIUM,9
+CTC,Cuttack Junction,ECoR,East Coast Railway,20.467,85.883,6,MEDIUM,17
+VSKP,Visakhapatnam,ECoR,East Coast Railway,17.7231,83.304,8,HIGH,27
+BAM,Brahmapur,ECoR,East Coast Railway,19.315,84.794,4,LOW,7
+NDLS,New Delhi,NR,Northern Railway,28.6431,77.2197,16,HIGH,21
+DLI,Delhi Junction (Old Delhi),NR,Northern Railway,28.6606,77.2274,10,HIGH,21
+UMB,Ambala Cantt Junction,NR,Northern Railway,30.3488,76.8125,8,MEDIUM,15
+LDH,Ludhiana Junction,NR,Northern Railway,30.901,75.8573,6,MEDIUM,10
+ASR,Amritsar Junction,NR,Northern Railway,31.634,74.8723,6,MEDIUM,11
+SVDK,Shri Mata Vaishno Devi Katra,NR,Northern Railway,33.0308,74.5335,4,LOW,6
+PRYJ,Prayagraj Junction,NCR,North Central Railway,25.4484,81.8546,10,HIGH,28
+AGC,Agra Cantt,NCR,North Central Railway,27.156,77.991,6,MEDIUM,11
+JHS,Jhansi Junction,NCR,North Central Railway,25.4484,78.5685,7,MEDIUM,14
+GKP,Gorakhpur Junction,NER,North Eastern Railway,26.7606,83.3732,10,HIGH,28
+BST,Basti,NER,North Eastern Railway,26.8145,82.7645,4,LOW,2
+GD,Gonda Junction,NER,North Eastern Railway,27.1333,81.9667,5,LOW,4
+GHY,Guwahati,NFR,Northeast Frontier Railway,26.1839,91.7362,6,HIGH,24
+NJP,New Jalpaiguri,NFR,Northeast Frontier Railway,26.6961,88.431,6,MEDIUM,17
+DBRG,Dibrugarh,NFR,Northeast Frontier Railway,27.4728,94.912,4,LOW,7
+JP,Jaipur Junction,NWR,North Western Railway,26.9196,75.7878,7,HIGH,25
+JU,Jodhpur Junction,NWR,North Western Railway,26.287,73.0243,6,MEDIUM,10
+BKN,Bikaner Junction,NWR,North Western Railway,28.0143,73.3119,5,LOW,7
+AII,Ajmer Junction,NWR,North Western Railway,26.457,74.639,6,MEDIUM,16
+MAS,Chennai Central,SR,Southern Railway,13.0827,80.2755,12,HIGH,29
+MS,Chennai Egmore,SR,Southern Railway,13.0732,80.2609,10,MEDIUM,14
+TPJ,Tiruchchirapalli Junction,SR,Southern Railway,10.8038,78.6857,7,MEDIUM,10
+MDU,Madurai Junction,SR,Southern Railway,9.9252,78.1198,6,MEDIUM,9
+CBE,Coimbatore Junction,SR,Southern Railway,11.0018,76.9629,6,MEDIUM,10
+TVC,Thiruvananthapuram Central,SR,Southern Railway,8.4875,76.9525,5,HIGH,20
+ERS,Ernakulam Junction,SR,Southern Railway,9.9714,76.2842,5,MEDIUM,14
+SC,Secunderabad Junction,SCR,South Central Railway,17.4344,78.5008,10,HIGH,27
+HYB,Hyderabad Deccan,SCR,South Central Railway,17.3819,78.4867,6,MEDIUM,16
+BZA,Vijayawada Junction,SCR,South Central Railway,16.5175,80.6167,10,HIGH,28
+GNT,Guntur Junction,SCR,South Central Railway,16.3067,80.4365,5,LOW,7
+NLDA,Nalgonda,SCR,South Central Railway,17.0575,79.267,3,LOW,4
+BSP,Bilaspur Junction,SECR,South East Central Railway,22.0797,82.1391,8,HIGH,24
+R,Raipur Junction,SECR,South East Central Railway,21.2379,81.6337,7,MEDIUM,12
+DURG,Durg Junction,SECR,South East Central Railway,21.1904,81.2849,6,MEDIUM,10
+KGP,Kharagpur Junction,SER,South Eastern Railway,22.3302,87.3237,9,HIGH,19
+TATA,Tatanagar Junction,SER,South Eastern Railway,22.7925,86.1842,6,MEDIUM,17
+ROU,Rourkela,SER,South Eastern Railway,22.2604,84.8536,5,LOW,3
+SBC,KSR Bengaluru City Junction,SWR,South Western Railway,12.9767,77.5713,10,HIGH,26
+UBL,Hubballi Junction,SWR,South Western Railway,15.3487,75.124,6,MEDIUM,13
+MYS,Mysuru Junction,SWR,South Western Railway,12.3072,76.6553,5,MEDIUM,9
+BCT,Mumbai Central,WR,Western Railway,18.9694,72.8202,7,HIGH,30
+ADI,Ahmedabad Junction,WR,Western Railway,23.0225,72.5714,12,HIGH,18
+ST,Surat,WR,Western Railway,21.1959,72.8302,5,MEDIUM,9
+RTM,Ratlam Junction,WR,Western Railway,23.3315,75.0367,6,MEDIUM,9
+BVP,Bhavnagar Terminus,WR,Western Railway,21.7645,72.1519,4,LOW,3
+JBP,Jabalpur Junction,WCR,West Central Railway,23.1687,79.9333,7,HIGH,28
+BPL,Bhopal Junction,WCR,West Central Railway,23.268,77.402,6,HIGH,20
+COR,Kota Junction,WCR,West Central Railway,25.1804,75.8648,8,MEDIUM,14
+CDL,Kudal,KR,Konkan Railway,16.0092,73.68,3,LOW,7
+MAO,Madgaon Junction,KR,Konkan Railway,15.3781,73.9564,5,MEDIUM,14
+RN,Ratnagiri,KR,Konkan Railway,16.9902,73.312,4,LOW,5
