@@ -6,6 +6,16 @@ Takes a single primary delay event (a train, delayed by N minutes, at a
 station) and walks the Module 2 graph OUTWARD from it, computing how far
 and how strongly that delay propagates, until it's too small to matter.
 
+Built on SimPy, a discrete-event simulation library: rather than an
+instantaneous recursive/queue-based calculation, propagation is modeled
+as a chain of scheduled events on a simulated clock. Each station takes 1
+simulated minute to detect and relay a disruption onward (representing
+the real reporting/handling delay before a disruption is communicated to
+the next dependency point) before deciding whether -- and how strongly --
+to pass it on. This is what makes it a genuine simulation (events
+scheduled and processed along a timeline) rather than a plain calculation
+dressed up as one.
+
 Scope decision (documented, same convention as Module 2):
     Propagation follows ONLY SCHED_DEP edges (same train, next stop) and
     RS_DEP edges (same locomotive, next train) — not INFRA edges. INFRA
@@ -23,6 +33,7 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 import pandas as pd
+import simpy
 
 from multiplex_graph import MultiplexGraph
 
@@ -35,6 +46,11 @@ CASCADE_STOP_THRESHOLD_MINS = 5.0
 # Safety cap on hops to guarantee termination even if the graph ever
 # contains an unexpected cycle (e.g. an unusual locomotive rotation).
 MAX_HOPS = 25
+
+# Simulated minutes it takes a station to detect and relay a disruption
+# onward. This is what gives the simulation an actual clock: propagation
+# happens in discrete, timed steps rather than all at once.
+REPORTING_DELAY_SIM_MINUTES = 1
 
 
 @dataclass
@@ -69,19 +85,114 @@ class CascadeSimulator:
     def __init__(self, mg: MultiplexGraph):
         self.mg = mg
 
+    def _propagate(
+        self, env: simpy.Environment, cur_train: int, cur_station: str, cur_delay: float,
+        hop: int, result: CascadeResult, best_seen: dict, blocked_hops: set, frontier_detector,
+    ):
+        """A SimPy process: one delay 'wave' arriving at a station. Yields a
+        timeout representing the time it takes to detect/relay the
+        disruption, then evaluates every onward dependency and spawns a new
+        process for each one that still carries enough delay to matter."""
+        yield env.timeout(REPORTING_DELAY_SIM_MINUTES)
+
+        key = (cur_train, cur_station)
+        if best_seen.get(key, -1) >= cur_delay:
+            return
+        best_seen[key] = cur_delay
+
+        if hop >= MAX_HOPS:
+            return
+
+        for _, dst, data in self.mg.graph.out_edges(cur_station, data=True):
+            edge_type = data.get("edge_type")
+
+            # Only follow edges that actually belong to this train's
+            # journey or this locomotive's next assignment.
+            if edge_type == "SCHED_DEP" and data.get("train_number") == cur_train:
+                next_train = cur_train
+            elif edge_type == "RS_DEP" and data.get("from_train") == cur_train:
+                next_train = data.get("to_train")
+            else:
+                continue
+
+            buffer = data.get("buffer_time_mins", 0.0)
+            weight = data.get("propagation_weight", 0.0)
+            new_delay = max(0.0, (cur_delay - buffer) * weight)
+
+            hop_key = (cur_station, dst, edge_type, cur_train)
+            if hop_key in blocked_hops:
+                new_delay = 0.0  # simulates a mitigation action fully absorbing the delay here
+
+            actually_continues = new_delay >= CASCADE_STOP_THRESHOLD_MINS
+
+            if frontier_detector is not None and data.get("zone_crossing"):
+                evaluation = frontier_detector.evaluate(cur_station, cur_delay)
+                if evaluation is not None:
+                    result.frontier_checks.append(
+                        {
+                            "station_id": cur_station,
+                            "p_cross": evaluation.p_cross,
+                            "alert": evaluation.alert,
+                            "actually_crossed": actually_continues,
+                        }
+                    )
+
+            if not actually_continues:
+                result.path_log.append(
+                    f"[t={env.now}] hop {hop+1}: {edge_type} {cur_station}->{dst} "
+                    f"(train {cur_train}->{next_train}): "
+                    f"{cur_delay:.1f}min -> {new_delay:.1f}min (below threshold, stops)"
+                )
+                continue
+
+            result.path_log.append(
+                f"[t={env.now}] hop {hop+1}: {edge_type} {cur_station}->{dst} "
+                f"(train {cur_train}->{next_train}): "
+                f"{cur_delay:.1f}min -> {new_delay:.1f}min (continues)"
+            )
+            result.traversed_edges.append(
+                {
+                    "hop": hop + 1,
+                    "src": cur_station,
+                    "dst": dst,
+                    "edge_type": edge_type,
+                    "from_train": cur_train,
+                    "to_train": next_train,
+                    "delay_before": round(cur_delay, 1),
+                    "delay_after": round(new_delay, 1),
+                    "zone_crossing": bool(data.get("zone_crossing")),
+                    "sim_time": env.now,
+                }
+            )
+
+            result.cascade_depth = max(result.cascade_depth, hop + 1)
+            result.delay_spread_minutes += new_delay
+            if data.get("zone_crossing"):
+                result.cross_zone_propagation = True
+            if next_train != result.train_number:
+                result.affected_trains.add(next_train)
+
+            env.process(
+                self._propagate(
+                    env, next_train, dst, new_delay, hop + 1, result, best_seen, blocked_hops, frontier_detector
+                )
+            )
+
     def simulate_event(
         self, train_number: int, station_id: str, delay_minutes: float,
         frontier_detector=None, blocked_hops: Optional[set] = None,
     ) -> CascadeResult:
-        """Runs the weighted BFS for a single primary delay event.
+        """Runs the discrete-event cascade simulation for a single primary
+        delay event, using a SimPy Environment as the simulation clock.
 
         If frontier_detector (Module 5's CrossZoneFrontierDetector) is
         passed in, every zone-crossing SCHED_DEP/RS_DEP edge encountered
         during propagation is also evaluated for a frontier alert, and the
         result recorded in result.frontier_checks alongside whether the
-        BFS itself determined the delay actually continued past that edge
-        -- this is what lets run_frontier_detector.py compute precision/
-        recall for the detector against the simulator's own ground truth.
+        simulation itself determined the delay actually continued past
+        that edge -- this is what lets run_frontier_detector.py compute
+        precision/recall for the detector against the simulator's own
+        ground truth.
 
         blocked_hops (Module 7's counterfactual mechanism): an optional
         set of (src_station, dst_station, edge_type, from_train) tuples.
@@ -104,93 +215,12 @@ class CascadeSimulator:
             result.path_log.append(f"Station {station_id} not found in graph — no propagation.")
             return result
 
-        # Queue items: (train_number, station_id, incoming_delay, hop)
-        queue = [(train_number, station_id, delay_minutes, 0)]
-        # Guards against reprocessing the same (train, station) with a
-        # delay no larger than one already handled — prevents loops and
-        # wasted work, mirrors a visited-set in standard BFS.
+        env = simpy.Environment()
         best_seen: dict[tuple, float] = {}
-
-        while queue:
-            cur_train, cur_station, cur_delay, hop = queue.pop(0)
-
-            key = (cur_train, cur_station)
-            if best_seen.get(key, -1) >= cur_delay:
-                continue
-            best_seen[key] = cur_delay
-
-            if hop >= MAX_HOPS:
-                continue
-
-            for _, dst, data in self.mg.graph.out_edges(cur_station, data=True):
-                edge_type = data.get("edge_type")
-
-                # Only follow edges that actually belong to this train's
-                # journey or this locomotive's next assignment.
-                if edge_type == "SCHED_DEP" and data.get("train_number") == cur_train:
-                    next_train = cur_train
-                elif edge_type == "RS_DEP" and data.get("from_train") == cur_train:
-                    next_train = data.get("to_train")
-                else:
-                    continue
-
-                buffer = data.get("buffer_time_mins", 0.0)
-                weight = data.get("propagation_weight", 0.0)
-                new_delay = max(0.0, (cur_delay - buffer) * weight)
-
-                hop_key = (cur_station, dst, edge_type, cur_train)
-                if hop_key in blocked_hops:
-                    new_delay = 0.0  # simulates a mitigation action fully absorbing the delay here
-
-                actually_continues = new_delay >= CASCADE_STOP_THRESHOLD_MINS
-
-                if frontier_detector is not None and data.get("zone_crossing"):
-                    evaluation = frontier_detector.evaluate(cur_station, cur_delay)
-                    if evaluation is not None:
-                        result.frontier_checks.append(
-                            {
-                                "station_id": cur_station,
-                                "p_cross": evaluation.p_cross,
-                                "alert": evaluation.alert,
-                                "actually_crossed": actually_continues,
-                            }
-                        )
-
-                if not actually_continues:
-                    result.path_log.append(
-                        f"hop {hop+1}: {edge_type} {cur_station}->{dst} "
-                        f"(train {cur_train}->{next_train}): "
-                        f"{cur_delay:.1f}min -> {new_delay:.1f}min (below threshold, stops)"
-                    )
-                    continue
-
-                result.path_log.append(
-                    f"hop {hop+1}: {edge_type} {cur_station}->{dst} "
-                    f"(train {cur_train}->{next_train}): "
-                    f"{cur_delay:.1f}min -> {new_delay:.1f}min (continues)"
-                )
-                result.traversed_edges.append(
-                    {
-                        "hop": hop + 1,
-                        "src": cur_station,
-                        "dst": dst,
-                        "edge_type": edge_type,
-                        "from_train": cur_train,
-                        "to_train": next_train,
-                        "delay_before": round(cur_delay, 1),
-                        "delay_after": round(new_delay, 1),
-                        "zone_crossing": bool(data.get("zone_crossing")),
-                    }
-                )
-
-                result.cascade_depth = max(result.cascade_depth, hop + 1)
-                result.delay_spread_minutes += new_delay
-                if data.get("zone_crossing"):
-                    result.cross_zone_propagation = True
-                if next_train != train_number:
-                    result.affected_trains.add(next_train)
-
-                queue.append((next_train, dst, new_delay, hop + 1))
+        env.process(
+            self._propagate(env, train_number, station_id, delay_minutes, 0, result, best_seen, blocked_hops, frontier_detector)
+        )
+        env.run()  # advances the simulated clock until no events remain
 
         return result
 

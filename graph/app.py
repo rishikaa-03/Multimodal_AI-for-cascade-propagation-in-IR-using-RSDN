@@ -83,11 +83,29 @@ def load_precomputed_results():
     return graph_sim, frontier
 
 
+@st.cache_data
+def load_network_risk():
+    """Module 8's whole-network risk tally (Modulerun via
+    network_risk_summary.py) -- station/edge involvement across ALL
+    events, for the Full Network Map tab. Returns (None, None) if it
+    hasn't been generated yet."""
+    station_path = os.path.join(HERE, "station_risk_summary.csv")
+    edge_path = os.path.join(HERE, "edge_risk_summary.csv")
+    if os.path.exists(station_path) and os.path.exists(edge_path):
+        return pd.read_csv(station_path), pd.read_csv(edge_path)
+    return None, None
+
+
+RISK_COLORS = {"normal": "#2E7D32", "cascade": "#C62828", "cross_zone": "#1565C0"}  # green / red / blue
+RISK_LABELS = {"normal": "Normal", "cascade": "Cascade risk", "cross_zone": "Cross-zone cascade risk"}
+
+
 mg = load_graph()
 detector = load_detector(mg)
 cause_clf, cascade_predictor = load_models()
 stations_df, delay_events_df = load_reference_data()
 graph_sim_df, frontier_df = load_precomputed_results()
+station_risk_df, edge_risk_df = load_network_risk()
 
 
 # ---------------------------------------------------------------------------
@@ -137,7 +155,7 @@ def build_network_map(highlight_edges=None, highlight_stations=None, alert_stati
         fig.add_trace(
             go.Scattermapbox(
                 lat=h_lats, lon=h_lons, mode="lines",
-                line=dict(width=3, color="crimson"),
+                line=dict(width=3, color=RISK_COLORS["cascade"]),
                 hoverinfo="none", name="Cascade path",
             )
         )
@@ -147,11 +165,11 @@ def build_network_map(highlight_edges=None, highlight_stations=None, alert_stati
     for _, row in stations_df.iterrows():
         sid = row["station_id"]
         if sid in highlight_stations:
-            colors.append("crimson"); sizes.append(12)
+            colors.append(RISK_COLORS["cascade"]); sizes.append(12)   # red — on this cascade's path
         elif sid in alert_stations:
-            colors.append("orange"); sizes.append(10)
+            colors.append(RISK_COLORS["cross_zone"]); sizes.append(11)  # blue — cross-zone alert fired here
         else:
-            colors.append("steelblue"); sizes.append(6)
+            colors.append(RISK_COLORS["normal"]); sizes.append(6)     # green — uninvolved
         texts.append(f"{row['station_name']} ({sid}) — {row['zone_name']}")
 
     fig.add_trace(
@@ -173,6 +191,88 @@ def build_network_map(highlight_edges=None, highlight_stations=None, alert_stati
     return fig
 
 
+def build_full_risk_map(station_risk_df: pd.DataFrame, edge_risk_df: pd.DataFrame):
+    """The whole-network view: every station and every train/rolling-stock
+    dependency link, colored by whether it was EVER part of a cascade
+    across all simulated events (green = never, red = cascade at least
+    once, blue = a cross-zone cascade at least once). This is a system-
+    wide risk map, not tied to any one chosen event -- that's what the
+    Live Simulation tab is for.
+    """
+    fig = go.Figure()
+
+    # Physical track, faint background -- this is the "map", not the
+    # thing being colored by risk (that's the dependency edges below).
+    seen_pairs = set()
+    edge_lats, edge_lons = [], []
+    for u, v, data in mg.graph.edges(data=True):
+        if data.get("edge_type") != "INFRA":
+            continue
+        pair = tuple(sorted((u, v)))
+        if pair in seen_pairs:
+            continue
+        seen_pairs.add(pair)
+        lat1, lon1 = mg.graph.nodes[u]["latitude"], mg.graph.nodes[u]["longitude"]
+        lat2, lon2 = mg.graph.nodes[v]["latitude"], mg.graph.nodes[v]["longitude"]
+        edge_lats += [lat1, lat2, None]
+        edge_lons += [lon1, lon2, None]
+    fig.add_trace(
+        go.Scattermapbox(
+            lat=edge_lats, lon=edge_lons, mode="lines",
+            line=dict(width=1, color="lightgray"),
+            hoverinfo="none", showlegend=False,
+        )
+    )
+
+    # Train/rolling-stock dependency links (SCHED_DEP + RS_DEP), colored
+    # by risk. Drawn in order normal -> cascade -> cross_zone so the more
+    # severe colors sit on top and aren't hidden underneath green lines.
+    for level in ["normal", "cascade", "cross_zone"]:
+        subset = edge_risk_df[edge_risk_df["risk_level"] == level]
+        lats, lons = [], []
+        for row in subset.itertuples():
+            if row.src not in mg.graph or row.dst not in mg.graph:
+                continue
+            lat1, lon1 = mg.graph.nodes[row.src]["latitude"], mg.graph.nodes[row.src]["longitude"]
+            lat2, lon2 = mg.graph.nodes[row.dst]["latitude"], mg.graph.nodes[row.dst]["longitude"]
+            lats += [lat1, lat2, None]
+            lons += [lon1, lon2, None]
+        fig.add_trace(
+            go.Scattermapbox(
+                lat=lats, lon=lons, mode="lines",
+                line=dict(width=2 if level == "normal" else 2.5, color=RISK_COLORS[level]),
+                opacity=0.5 if level == "normal" else 0.85,
+                hoverinfo="none", name=f"{RISK_LABELS[level]} (link)",
+            )
+        )
+
+    # Stations, colored by the most severe risk level touching them.
+    merged = stations_df.merge(station_risk_df, on="station_id", how="left")
+    merged["risk_level"] = merged["risk_level"].fillna("normal")
+    for level in ["normal", "cascade", "cross_zone"]:
+        subset = merged[merged["risk_level"] == level]
+        fig.add_trace(
+            go.Scattermapbox(
+                lat=subset["latitude"], lon=subset["longitude"],
+                mode="markers",
+                marker=dict(size=7 if level == "normal" else 10, color=RISK_COLORS[level]),
+                text=[f"{r.station_name} ({r.station_id}) — {r.zone_name}" for r in subset.itertuples()],
+                hoverinfo="text", name=f"{RISK_LABELS[level]} (station)",
+            )
+        )
+
+    fig.update_layout(
+        mapbox_style="open-street-map",
+        mapbox_center=dict(lat=22.5, lon=79.0),
+        mapbox_zoom=3.8,
+        margin=dict(l=0, r=0, t=0, b=0),
+        height=650,
+        showlegend=True,
+        legend=dict(bgcolor="rgba(255,255,255,0.8)"),
+    )
+    return fig
+
+
 # ---------------------------------------------------------------------------
 # UI
 # ---------------------------------------------------------------------------
@@ -183,7 +283,29 @@ st.caption(
     "Using Rolling Stock Dependency Graphs in Indian Railways"
 )
 
-tab_live, tab_overview = st.tabs(["🔴 Live Simulation", "📊 Network Overview"])
+tab_map, tab_live, tab_overview = st.tabs(["🗺️ Full Network Map", "🔴 Live Simulation", "📊 Network Overview"])
+
+# ---- Tab 0: Full Network Map ------------------------------------------------
+with tab_map:
+    st.subheader("System-wide cascade risk — every station and train link")
+    st.caption(
+        "Green = never part of a cascade across all 6,000 simulated events. "
+        "Red = part of a cascade at least once. Blue = part of a cascade that "
+        "crossed a zone boundary at least once. This is the whole-network "
+        "picture — pick one specific event to trace in the Live Simulation tab."
+    )
+    if station_risk_df is not None and edge_risk_df is not None:
+        n_normal = (station_risk_df["risk_level"] == "normal").sum()
+        n_cascade = (station_risk_df["risk_level"] == "cascade").sum()
+        n_cross = (station_risk_df["risk_level"] == "cross_zone").sum()
+        c1, c2, c3 = st.columns(3)
+        c1.metric("🟢 Normal stations", n_normal)
+        c2.metric("🔴 Cascade-risk stations", n_cascade)
+        c3.metric("🔵 Cross-zone-risk stations", n_cross)
+
+        st.plotly_chart(build_full_risk_map(station_risk_df, edge_risk_df), use_container_width=True)
+    else:
+        st.info("Run `python3 network_risk_summary.py` first to generate the whole-network risk data.")
 
 # ---- Tab 1: Live Simulation ------------------------------------------------
 with tab_live:
