@@ -39,6 +39,7 @@ from cross_zone_detector import CrossZoneFrontierDetector  # noqa: E402
 from cause_classifier import CauseClassifier  # noqa: E402
 from cascade_predictor import CascadePredictor, add_graph_features  # noqa: E402
 from recommendation_engine import RecommendationEngine  # noqa: E402
+from auth import require_login, render_user_bar, has_permission
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.normpath(os.path.join(HERE, "..", "data"))
@@ -537,6 +538,11 @@ def render_stat_card(color: str, label: str, value: str) -> None:
         unsafe_allow_html=True,
     )
 
+# ---------------------------------------------------------------------------
+# Authentication
+# ---------------------------------------------------------------------------
+
+user = require_login()
 
 mg = load_graph()
 detector = load_detector(mg)
@@ -768,6 +774,7 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
+render_user_bar(user)
 
 # ---------------------------------------------------------------------------
 # Frontier alert ticker
