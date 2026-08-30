@@ -1,0 +1,80 @@
+{
+  "stages": [
+    {
+      "stage": "Module 2 \u2014 build_graph.py",
+      "ok": true,
+      "elapsed_s": 0.93,
+      "returncode": 0,
+      "stderr_tail": ""
+    },
+    {
+      "stage": "Module 3 \u2014 run_simulator.py",
+      "ok": true,
+      "elapsed_s": 1.72,
+      "returncode": 0,
+      "stderr_tail": ""
+    },
+    {
+      "stage": "Module 4 \u2014 run_models.py",
+      "ok": true,
+      "elapsed_s": 8.18,
+      "returncode": 0,
+      "stderr_tail": ""
+    },
+    {
+      "stage": "Module 5 \u2014 run_frontier_detector.py",
+      "ok": true,
+      "elapsed_s": 1.57,
+      "returncode": 0,
+      "stderr_tail": ""
+    },
+    {
+      "stage": "Module 8 \u2014 network_risk_summary.py",
+      "ok": true,
+      "elapsed_s": 1.72,
+      "returncode": 0,
+      "stderr_tail": ""
+    }
+  ],
+  "artifacts": [
+    {
+      "artifact": "multiplex_graph.pkl",
+      "exists": true,
+      "size_bytes": 165748
+    },
+    {
+      "artifact": "graph_simulation_dataset.csv",
+      "exists": true,
+      "size_bytes": 240538
+    },
+    {
+      "artifact": "cause_classifier.pkl",
+      "exists": true,
+      "size_bytes": 98921
+    },
+    {
+      "artifact": "cascade_predictor.pkl",
+      "exists": true,
+      "size_bytes": 88432377
+    },
+    {
+      "artifact": "frontier_alerts_summary.csv",
+      "exists": true,
+      "size_bytes": 222522
+    },
+    {
+      "artifact": "station_risk_summary.csv",
+      "exists": true,
+      "size_bytes": 1146
+    },
+    {
+      "artifact": "edge_risk_summary.csv",
+      "exists": true,
+      "size_bytes": 13473
+    }
+  ],
+  "dashboard": {
+    "http_code": "200",
+    "ok": true
+  }
+}
