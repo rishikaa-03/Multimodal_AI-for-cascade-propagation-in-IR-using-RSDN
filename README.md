@@ -26,7 +26,6 @@ cascade is likely to cross an administrative zone boundary before it happens.
 - [Tech Stack](#tech-stack)
 - [Project Structure](#project-structure)
 - [Getting Started](#getting-started)
-- [Roadmap](#roadmap)
 
 ---
 
@@ -142,13 +141,12 @@ pip install -r requirements.txt
 If the `.pkl` artifacts and `data/*.csv` files aren't already present, run
 the module pipeline in order:
 
-1. Simulate the synthetic dataset (Module 1)
-2. Build the multiplex graph (Module 2)
-3. Run the cascade simulator to generate training data (Module 3)
-4. Train the cause classifier and cascade predictor (Module 4)
-5. Calibrate the frontier detector (Module 5)
-6. Generate the whole-network risk summary (Module 8) — required for the Full
-   Network Map tab
+1. Simulate the synthetic dataset 
+2. Build the multiplex graph 
+3. Run the cascade simulator to generate training data 
+4. Train the cause classifier and cascade predictor 
+5. Calibrate the frontier detector 
+6. Generate the whole-network risk summary 
 
 </details>
 
