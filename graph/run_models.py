@@ -1,13 +1,4 @@
-"""
-Run this file to execute Module 4 end-to-end:
-    cd RailwayCascadeAI/graph
-    python3 run_models.py
 
-Merges delay_events.csv with graph_simulation_dataset.csv (Module 3's
-output) on event_id, trains the cause classifier and the cascade
-predictor, prints evaluation metrics, saves both trained models, and
-demonstrates the fused output on a few sample events.
-"""
 
 import os
 import sys

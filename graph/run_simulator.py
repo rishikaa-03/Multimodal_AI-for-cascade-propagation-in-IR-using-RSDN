@@ -1,13 +1,4 @@
-"""
-Run this file to execute Module 3 end-to-end:
-    cd RailwayCascadeAI/graph
-    python3 run_simulator.py
 
-Loads the Module 2 graph, runs the cascade simulator on delay_events.csv,
-prints a manual trace for inspection, and saves the graph-grounded scenario
-dataset to graph_simulation_dataset.csv for later comparison against the
-formula-based simulation_dataset.csv from Module 1.
-"""
 
 import os
 import sys

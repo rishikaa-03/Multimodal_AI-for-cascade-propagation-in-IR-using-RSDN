@@ -1,13 +1,4 @@
-"""
-Run this file to train and evaluate the GATv2 GNN:
-    cd RailwayCascadeAI/graph
-    python3 run_gnn.py
 
-Requires torch and torch_geometric (pip install torch torch_geometric --
-this is a large download, ~1-2GB; Google Colab / Kaggle Notebooks have
-both preinstalled, which is why they were chosen as this project's free
-GPU option).
-"""
 
 import os
 import sys
