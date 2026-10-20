@@ -1,31 +1,3 @@
-"""
-Module 3 — Cascade Propagation Simulator (implements SRS FR-04)
-=================================================================
-
-Takes a single primary delay event (a train, delayed by N minutes, at a
-station) and walks the Module 2 graph OUTWARD from it, computing how far
-and how strongly that delay propagates, until it's too small to matter.
-
-Built on SimPy, a discrete-event simulation library: rather than an
-instantaneous recursive/queue-based calculation, propagation is modeled
-as a chain of scheduled events on a simulated clock. Each station takes 1
-simulated minute to detect and relay a disruption onward (representing
-the real reporting/handling delay before a disruption is communicated to
-the next dependency point) before deciding whether -- and how strongly --
-to pass it on. This is what makes it a genuine simulation (events
-scheduled and processed along a timeline) rather than a plain calculation
-dressed up as one.
-
-Scope decision (documented, same convention as Module 2):
-    Propagation follows ONLY SCHED_DEP edges (same train, next stop) and
-    RS_DEP edges (same locomotive, next train) — not INFRA edges. INFRA
-    congestion spreading to OTHER trains on the same track would require
-    full timetable-aware simulation (knowing exactly which train uses that
-    track section next, and when), which is a real additional feature, not
-    an extension of this one. SCHED_DEP + RS_DEP are exactly the project's
-    two core contributions (schedule chains + hidden rolling-stock chains),
-    so this scope is deliberate, not a shortcut around something needed now.
-"""
 
 from __future__ import annotations
 
@@ -89,10 +61,7 @@ class CascadeSimulator:
         self, env: simpy.Environment, cur_train: int, cur_station: str, cur_delay: float,
         hop: int, result: CascadeResult, best_seen: dict, blocked_hops: set, frontier_detector,
     ):
-        """A SimPy process: one delay 'wave' arriving at a station. Yields a
-        timeout representing the time it takes to detect/relay the
-        disruption, then evaluates every onward dependency and spawns a new
-        process for each one that still carries enough delay to matter."""
+    
         yield env.timeout(REPORTING_DELAY_SIM_MINUTES)
 
         key = (cur_train, cur_station)

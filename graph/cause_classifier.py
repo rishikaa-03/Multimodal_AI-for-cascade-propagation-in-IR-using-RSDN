@@ -1,19 +1,4 @@
-"""
-Module 4a — Delay Cause Classifier (implements SRS FR-07's cause
-classification, using TF-IDF + Logistic Regression instead of DistilBERT)
 
-Scope decision (documented, same convention as Modules 2 and 3):
-    The SRS specifies a BERT-based classifier for `reported_text`. Given
-    cause_category is a clean, labeled, 7-class problem with ~600-1000
-    examples per class, a TF-IDF + Logistic Regression pipeline reaches
-    comparable practical accuracy without needing a pretrained transformer
-    download (Hugging Face) or PyTorch itself. This is both cheaper to run
-    and faster to train (seconds vs minutes-to-hours on CPU), so it is the
-    efficient choice, not just the free one. Swappable for a real
-    fine-tuned DistilBERT later without changing how this module is used
-    by the rest of the pipeline (predict_proba / predict interface stays
-    the same either way).
-"""
 
 from __future__ import annotations
 

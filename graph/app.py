@@ -1,26 +1,4 @@
-"""
-Module 6 — Dashboard (Streamlit + Plotly)
-============================================
 
-Run with:
-    cd RailwayCascadeAI/graph
-    streamlit run app.py
-
-Ties every previous module together into one interactive view:
-    - Module 2 (graph)              -> the network map
-    - Module 3 (cascade simulator)  -> "Live Simulation" tab
-    - Module 4 (AI predictors)      -> cause prediction + predicted vs actual comparison
-    - Module 5 (frontier detector)  -> alert markers + alert feed
-
-Design decisions:
-    - Map tiles use Plotly's built-in "open-street-map" style, which needs
-      NO API key and NO usage limits -- this was the free/no-subscription
-      swap for Mapbox decided earlier in the project.
-    - All heavy artifacts (graph, trained models, precomputed batch
-      results) are loaded ONCE via st.cache_resource / st.cache_data, so
-      re-running a simulation in the UI doesn't reload multi-second
-      objects on every interaction.
-"""
 
 import os
 import sys

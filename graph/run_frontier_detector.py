@@ -1,14 +1,3 @@
-"""
-Run this file to execute Module 5 end-to-end:
-    cd RailwayCascadeAI/graph
-    python3 run_frontier_detector.py
-
-Identifies frontier stations, re-runs the cascade simulator over all
-delay_events.csv with the frontier detector attached, prints a manual
-trace, and computes precision/recall of the detector's alerts against
-the simulator's own ground truth of whether a delay actually crossed.
-"""
-
 import os
 import sys
 

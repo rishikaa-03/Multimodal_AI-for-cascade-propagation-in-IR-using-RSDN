@@ -1,12 +1,4 @@
-"""
-Run this file to execute Module 2 end-to-end:
-    cd RailwayCascadeAI/graph
-    python3 build_graph.py
 
-It builds the MultiplexGraph from data/*.csv, runs all Step 9 validation
-checks, prints a human-readable report, and saves the graph to
-graph/multiplex_graph.pkl for Module 3 to load directly.
-"""
 
 import os
 import sys

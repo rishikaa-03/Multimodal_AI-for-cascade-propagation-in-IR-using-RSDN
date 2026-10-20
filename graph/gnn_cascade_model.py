@@ -1,44 +1,4 @@
-"""
-Module 4c — GATv2 Graph Neural Network (PyTorch Geometric)
-==============================================================
 
-Your guide asked specifically for PyTorch Geometric / DGL for GNN-based
-cascade prediction. Module 4's original CascadePredictor (Random Forest)
-was a deliberate substitution documented as a scope decision — this module
-replaces that reasoning with an actual GNN, and does it in the way that
-genuinely fits your data rather than forcing PyTorch Geometric onto
-something it isn't suited for.
-
-Why NODE-LEVEL prediction, not per-event:
-    An event-level GNN would need a separate graph "snapshot" per delay
-    event (6,000 of them), which is heavy machinery for what your data
-    actually supports. What your graph DOES have that's genuinely
-    GNN-shaped is its own structure: 73 stations connected by three kinds
-    of dependency edges. So instead, this model does what GNNs are
-    actually built for: message passing across the REAL network topology,
-    learning each station's cascade risk from its neighbours' structure —
-    not just its own attributes. Concretely, it predicts, for each
-    station: the average cascade_depth of delays originating there,
-    using Module 3's own simulation output (graph_simulation_dataset.csv)
-    as ground truth.
-
-Why GATv2Conv specifically:
-    This is the literal "GATv2" your original SRS names. GATv2Conv also
-    supports edge features (edge_dim), which lets it directly use each
-    edge's buffer_time_mins, propagation_weight, and edge_type as part of
-    the message-passing computation — not just the raw graph shape.
-
-Honest caveat (documented, same convention as every other module here):
-    73 nodes, of which only ~60 have any simulated events at all, is a
-    genuinely small dataset for a neural network. A held-out test set here
-    is maybe a dozen stations — results should be read as a demonstration
-    that the architecture is wired correctly and learns *something*
-    structurally sensible, not as a production-grade accuracy claim. This
-    is explicitly the trade-off already flagged when Random Forest was
-    chosen originally: small data favours simpler models, and that
-    remains true here. It's included because it's the SRS-specified
-    architecture, and it's a genuine, correct use of it.
-"""
 
 from __future__ import annotations
 

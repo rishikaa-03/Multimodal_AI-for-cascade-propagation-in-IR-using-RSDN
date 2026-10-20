@@ -1,23 +1,4 @@
-"""
-Module 8 — Network-wide Risk Summary
-========================================
 
-Runs the simulator across EVERY delay event (not just one), and tallies,
-per station and per SCHED_DEP/RS_DEP dependency edge, whether it was ever
-part of a cascade, and whether that cascade ever crossed a zone boundary.
-
-This is what powers the dashboard's "Full Network Map" — a system-wide
-view (green / red / blue) that's separate from the "Live Simulation" tab,
-which only ever shows ONE chosen event's path.
-
-Classification rule (applied identically to stations and edges):
-    - never appeared in any propagated cascade                -> "normal" (green)
-    - appeared in a cascade, but never a zone-crossing one     -> "cascade" (red)
-    - appeared in at least one cascade that crossed a zone     -> "cross_zone" (blue)
-
-A station's classification is the MOST severe classification of any edge
-touching it, since a station is "at risk" if anything connected to it is.
-"""
 
 import os
 import sys

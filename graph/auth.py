@@ -1,13 +1,4 @@
-"""
-Database-free authentication and role-based authorization for Railway Cascade AI.
 
-Roles:
-    admin      -> full access
-    controller -> network map + live simulation
-    viewer     -> network map only
-
-Credentials are stored as PBKDF2-SHA256 hashes in .streamlit/secrets.toml.
-"""
 
 import hashlib
 import hmac
@@ -171,6 +162,11 @@ def _login_page():
             line-height: 1;
         }
 
+        .system-icon svg {
+            width: 24px;
+            height: 24px;
+        }
+
         .system-copy {
             position: relative;
             z-index: 2;
@@ -251,19 +247,23 @@ def _login_page():
 
         .login-heading {
             max-width: 650px;
+            width: 100%;
             margin: 24px auto 0 auto;
             padding: 0 4px;
             color: var(--st-text-color);
             font-size: 21px;
             font-weight: 750;
+            text-align: center;
         }
 
         .login-description {
             max-width: 650px;
+            width: 100%;
             margin: 7px auto 0 auto;
             padding: 0 4px;
             color: var(--st-text-color);
             font-size: 13px;
+            text-align: center;
         }
 
         div[data-testid="stTextInput"] label,
@@ -389,7 +389,17 @@ def _login_page():
     st.markdown(
         f"""
         <div class="railway-header">
-            <div class="system-icon">🚆</div>
+            <div class="system-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="5" y="4" width="14" height="12" rx="3"></rect>
+                    <line x1="5" y1="10" x2="19" y2="10"></line>
+                    <line x1="9" y1="4" x2="9" y2="10"></line>
+                    <path d="M7 16 L5.5 19"></path>
+                    <path d="M17 16 L18.5 19"></path>
+                    <circle cx="8" cy="19" r="1.2" fill="#ffffff" stroke="none"></circle>
+                    <circle cx="16" cy="19" r="1.2" fill="#ffffff" stroke="none"></circle>
+                </svg>
+            </div>
             <div class="system-copy">
                 <div class="railway-title">Railway Cascade AI System</div>
                 <div class="railway-subtitle">
@@ -408,7 +418,7 @@ def _login_page():
     )
 
     st.markdown(
-        '<div class="login-heading">🔐 Secure Operations Portal</div>'
+        '<div class="login-heading">Secure Operations Portal</div>'
         '<div class="login-description">'
         'Sign in with your authorized railway operations account.'
         '</div>',
@@ -431,7 +441,7 @@ def _login_page():
                 autocomplete="current-password",
             )
             submitted = st.form_submit_button(
-                "🔐  SIGN IN",
+                "SIGN IN",
                 type="primary",
                 use_container_width=True,
             )
@@ -492,7 +502,7 @@ def render_user_bar(user):
 
     with left:
         st.caption(
-            f"👤 **{user['display_name']}**  •  "
+            f"**{user['display_name']}**  •  "
             f"Role: **{user['role_label']}**"
         )
 

@@ -1,27 +1,4 @@
-"""
-Module 2 — Railway Network Graph
-=================================
 
-Builds the multiplex railway graph specified in the project's SRS (FR-02)
-and Class Diagram. A single NetworkX MultiDiGraph holds three layers of
-directed edges on top of one set of station nodes:
-
-    INFRA      - physical track connections           (from tracks.csv)
-    SCHED_DEP  - a train's own stop-to-stop journey    (from routes.csv)
-    RS_DEP     - locomotive reuse between train services (from rolling_stock.csv)
-
-Why MultiDiGraph specifically:
-    - Directed: delay propagation flows in the direction of travel, and
-      RS_DEP edges are inherently one-directional (loco finishes train X,
-      then starts train Y — not the reverse).
-    - Multigraph: two stations can be connected by more than one kind of
-      edge at once (e.g. an INFRA edge AND a SCHED_DEP edge covering the
-      same pair of stations for a different train). A plain DiGraph only
-      allows a single edge between any two nodes, which would silently
-      overwrite one relationship with another.
-
-This module ONLY reads the CSVs in data/ — it never writes back to them.
-"""
 
 from __future__ import annotations
 

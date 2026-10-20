@@ -1,26 +1,3 @@
-"""
-Module 4b — Cascade Outcome Predictor (implements SRS FR-05/FR-06's
-prediction targets, using Random Forest / Gradient Boosting instead of
-LSTM + GATv2)
-
-Scope decision (documented, same convention as Modules 2 and 3):
-    The SRS specifies an LSTM (time-series) and a GATv2 (graph-structured)
-    model, fused together. Real time-series modelling needs many delay
-    readings per station over time; this dataset has ~6,000 events spread
-    across only 62 stations, which is too sparse for a deep sequence model
-    to learn real temporal patterns from. Similarly, GATv2 expects
-    meaningful per-scenario subgraphs, not one flat feature row per event.
-    Given the data is fundamentally tabular at this stage (one row per
-    event, mixed numeric/categorical features), tree-ensemble models are
-    the honest and efficient match for it -- this is a standard, defensible
-    substitution at this data scale, not a workaround. Predicts three
-    targets from FR-05/FR-06:
-        - cascade_depth            (regression)
-        - delay_spread_minutes     (regression)
-        - cross_zone_propagation   (classification, this is what FR-06's
-          Cross-Zone Frontier Detector consumes)
-"""
-
 from __future__ import annotations
 
 import pickle
@@ -49,18 +26,7 @@ CATEGORICAL_FEATURES = ["station_id"]  # station identity still kept as a fallba
 
 
 def add_graph_features(df: pd.DataFrame, mg) -> pd.DataFrame:
-    """Attaches per-event graph-derived features computed from the Module 2
-    MultiplexGraph. Two kinds:
-      - station-level aggregates (degree, fan-out, criticality) -- general
-        "how connected is this station" signal.
-      - event-specific mechanism features (does THIS train, at THIS station,
-        have a matching SCHED_DEP/RS_DEP edge, and what's its buffer/weight)
-        -- this directly encodes what cascade_simulator.py actually checks
-        when deciding whether propagation continues, so it should explain
-        cascade_depth far better than station identity alone, since two
-        different trains passing through the same station can have very
-        different onward dependencies.
-    """
+    
     out_degree, sched_out, rs_out, criticality = [], [], [], []
     has_sched, has_rs, next_buffer, next_weight = [], [], [], []
 
