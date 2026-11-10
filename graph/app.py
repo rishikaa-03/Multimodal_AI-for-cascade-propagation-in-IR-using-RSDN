@@ -559,7 +559,7 @@ def build_network_map(highlight_edges=None, highlight_stations=None, alert_stati
         edge_lons += [lon1, lon2, None]
 
     fig.add_trace(
-        go.Scattermapbox(
+        go.Scattermap(
             lat=edge_lats, lon=edge_lons, mode="lines",
             line=dict(width=1, color="lightgray"),
             hoverinfo="none", showlegend=False,
@@ -575,7 +575,7 @@ def build_network_map(highlight_edges=None, highlight_stations=None, alert_stati
             h_lats += [lat1, lat2, None]
             h_lons += [lon1, lon2, None]
         fig.add_trace(
-            go.Scattermapbox(
+            go.Scattermap(
                 lat=h_lats, lon=h_lons, mode="lines",
                 line=dict(width=3, color=RISK_COLORS["cascade"]),
                 hoverinfo="none", name="Cascade path",
@@ -595,7 +595,7 @@ def build_network_map(highlight_edges=None, highlight_stations=None, alert_stati
         texts.append(f"{row['station_name']} ({sid}) — {row['zone_name']}")
 
     fig.add_trace(
-        go.Scattermapbox(
+        go.Scattermap(
             lat=stations_df["latitude"], lon=stations_df["longitude"],
             mode="markers", marker=dict(size=sizes, color=colors),
             text=texts, hoverinfo="text", name="Stations",
@@ -603,9 +603,9 @@ def build_network_map(highlight_edges=None, highlight_stations=None, alert_stati
     )
 
     fig.update_layout(
-        mapbox_style="open-street-map",  # free, no API key needed
-        mapbox_center=dict(lat=22.5, lon=79.0),
-        mapbox_zoom=3.8,
+        map_style="open-street-map",  # free, no API key needed
+        map_center=dict(lat=22.5, lon=79.0),
+        map_zoom=3.8,
         margin=dict(l=0, r=0, t=0, b=0),
         height=610,
         paper_bgcolor=PLOT_PAPER_BG,
@@ -653,7 +653,7 @@ def build_full_risk_map(station_risk_df: pd.DataFrame, edge_risk_df: pd.DataFram
         edge_lats += [lat1, lat2, None]
         edge_lons += [lon1, lon2, None]
     fig.add_trace(
-        go.Scattermapbox(
+        go.Scattermap(
             lat=edge_lats, lon=edge_lons, mode="lines",
             line=dict(width=1, color="lightgray"),
             hoverinfo="none", showlegend=False,
@@ -674,7 +674,7 @@ def build_full_risk_map(station_risk_df: pd.DataFrame, edge_risk_df: pd.DataFram
             lats += [lat1, lat2, None]
             lons += [lon1, lon2, None]
         fig.add_trace(
-            go.Scattermapbox(
+            go.Scattermap(
                 lat=lats, lon=lons, mode="lines",
                 line=dict(width=2 if level == "normal" else 2.5, color=RISK_COLORS[level]),
                 opacity=0.5 if level == "normal" else 0.85,
@@ -688,7 +688,7 @@ def build_full_risk_map(station_risk_df: pd.DataFrame, edge_risk_df: pd.DataFram
     for level in ["normal", "cascade", "cross_zone"]:
         subset = merged[merged["risk_level"] == level]
         fig.add_trace(
-            go.Scattermapbox(
+            go.Scattermap(
                 lat=subset["latitude"], lon=subset["longitude"],
                 mode="markers",
                 marker=dict(size=7 if level == "normal" else 10, color=RISK_COLORS[level]),
@@ -698,9 +698,9 @@ def build_full_risk_map(station_risk_df: pd.DataFrame, edge_risk_df: pd.DataFram
         )
 
     fig.update_layout(
-        mapbox_style="open-street-map",
-        mapbox_center=dict(lat=22.5, lon=79.0),
-        mapbox_zoom=3.8,
+        map_style="open-street-map",
+        map_center=dict(lat=22.5, lon=79.0),
+        map_zoom=3.8,
         margin=dict(l=0, r=0, t=0, b=0),
         height=680,
         paper_bgcolor=PLOT_PAPER_BG,
